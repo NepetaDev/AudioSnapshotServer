@@ -1,0 +1,9 @@
+Package: io.ominousness.ass
+Name: AudioSnapshotServer
+Depends: mobilesubstrate
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: iOS mediaserverd hook to serve snapshots of current audio buffer via TCP/IP
+Maintainer: Ominousness
+Author: Ominousness
+Section: Tweaks
