@@ -21,6 +21,48 @@ float *empty = NULL;
     return %orig;
 }
 
+void handle_connection(int connfd)
+{
+    UInt32 len = sizeof(float);
+    int rlen = 0;
+    float *data = NULL;
+    char buffer[128];
+
+    while(connfd != -1) {
+        // Wait for anything to come from the client.
+        rlen = recv(connfd, buffer, sizeof(buffer), 0);
+        if (rlen <= 0) {
+            if (rlen == 0) {
+                close(connfd);
+            }
+            break;
+        }
+
+        // Send a dump of current audio buffer to the client.
+        data = NULL;
+
+        if (p_bufferlist != NULL) {
+            len = (*p_bufferlist).mBuffers[0].mDataByteSize;
+            data = (float *)(*p_bufferlist).mBuffers[0].mData;
+        } else {
+            len = sizeof(float);
+            data = empty;
+        }
+
+        rlen = send(connfd, &len, sizeof(UInt32), 0);
+        if (rlen > 0) {
+            rlen = send(connfd, data, len, 0);
+        }
+        
+        if (rlen <= 0) {
+            if (rlen == 0) {
+                close(connfd);
+            }
+            break;
+        }
+    }
+}
+
 void server()
 {
     NSLog(@"[ASS] Server created...");
@@ -54,49 +96,7 @@ void server()
         if (connfd > 0) {
             setsockopt(connfd, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                UInt32 len = sizeof(float);
-                int rlen = 0;
-                float *data = NULL;
-                char buffer[128];
-
-                while(true) {
-                    if (connfd == -1) break;
-                    rlen = recv(connfd, buffer, sizeof(buffer), 0); //accept anything from the client and send data back
-                    if (rlen <= 0) {
-                        if (rlen == 0) {
-                            close(connfd);
-                        }
-                        break;
-                    }
-                    data = NULL;
-
-                    if (p_bufferlist != NULL && (*p_bufferlist).mNumberBuffers > 0 && (*p_bufferlist).mNumberBuffers < 9) { //this is hacky but it gets the job done
-                        len = (*p_bufferlist).mBuffers[0].mDataByteSize;
-                        if (len > 4000 && len < 70000 && len % sizeof(float) == 0) {
-                            data = (float *)(*p_bufferlist).mBuffers[0].mData;
-                            if (data[0] > 1.5 || data[0] < -1.5) {
-                                data = NULL;
-                            }
-                        }
-                    }
-
-                    if (data == NULL) {
-                        len = sizeof(float);
-                        data = empty;
-                    }
-
-                    rlen = send(connfd, &len, sizeof(UInt32), 0);
-                    if (rlen > 0) {
-                        rlen = send(connfd, data, len, 0);
-                    }
-                    
-                    if (rlen <= 0) {
-                        if (rlen == 0) {
-                            close(connfd);
-                        }
-                        break;
-                    }
-                }
+                handle_connection(connfd);
             });
         }
     }
