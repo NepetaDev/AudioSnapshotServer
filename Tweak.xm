@@ -6,9 +6,7 @@
 AudioBufferList *p_bufferlist = NULL;
 float *empty = NULL;
 
-OSStatus (*AudioUnitRender_orig)(AudioUnit unit, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inOutputBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData);
-OSStatus AudioUnitRender_hook(AudioUnit unit, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inOutputBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
-{
+%hookf(OSStatus, AudioUnitRender, AudioUnit unit, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inOutputBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData) {
     AudioComponentDescription unitDescription = {0};
     AudioComponentGetDescription(AudioComponentInstanceGetComponent(unit), &unitDescription);
     
@@ -20,7 +18,7 @@ OSStatus AudioUnitRender_hook(AudioUnit unit, AudioUnitRenderActionFlags *ioActi
         }
     }
 
-    return AudioUnitRender_orig(unit, ioActionFlags, inTimeStamp, inOutputBusNumber, inNumberFrames, ioData);
+    return %orig;
 }
 
 void server()
@@ -110,5 +108,5 @@ void server()
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         server();
     });
-    MSHookFunction(AudioUnitRender, AudioUnitRender_hook, &AudioUnitRender_orig);
+    %init;
 }
