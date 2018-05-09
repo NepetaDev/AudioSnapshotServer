@@ -1,6 +1,5 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <arpa/inet.h>
-#import <substrate.h>
 #define ASSPort 43333
 
 AudioBufferList *p_bufferlist = NULL;
