@@ -10,4 +10,4 @@ If you send anything to localhost at the port 43333 it will reply with current b
 
 ## Bugs
 
-Feel free to [open a new issue](https://github.com/Ominousness/AudioSnapshotServer/issues/new).
+Feel free to [open a new issue](https://github.com/Nepeta/AudioSnapshotServer/issues/new).
