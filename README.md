@@ -10,13 +10,12 @@ TCP/IP server to fetch audio buffer's snapshot from mediaserverd.
 
 **This tweak by itself does nothing noticeable. A client tweak is neccessary for visible effects - try [MitsuhaXI](https://github.com/Nepeta/MitsuhaXI/)**
 
-1. Make sure [Electra](https://coolstar.org/electra/) is installed.
-2. Add this repository to Cydia: https://repo.nepeta.me/
-3. Install AudioSnapshotServer.
+1. Add this repository to Cydia: https://repo.nepeta.me/
+2. Install AudioSnapshotServer.
 
 ## How to use it in your tweak?
 
-If you send anything to localhost at the port 43333 it will reply with current buffer state. That's all to it.
+If you send anything to localhost at the port 43333 it will reply with a dump of the current audio buffer (raw PCM audio data). That's all to it.
 
 ## Bugs
 
