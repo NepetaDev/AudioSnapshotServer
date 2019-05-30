@@ -1,5 +1,6 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <arpa/inet.h>
+#import <sys/time.h>
 #define ASSPort 43333
 
 AudioBufferList *p_bufferlist = NULL;
@@ -22,12 +23,29 @@ float *empty = NULL;
 
 void handle_connection(int connfd)
 {
+    NSLog(@"[ASS] [%d] Connection opened.", connfd);
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+
     UInt32 len = sizeof(float);
     int rlen = 0;
     float *data = NULL;
     char buffer[128];
 
+    fd_set readset;
+    int result = -1;
+    FD_ZERO(&readset);
+    FD_SET(connfd, &readset);
+
     while(connfd != -1) {
+        result = select(connfd+1, &readset, NULL, NULL, &tv);
+
+        if (result < 0) {
+            close(connfd);
+            break;
+        }
+        
         // Wait for anything to come from the client.
         rlen = recv(connfd, buffer, sizeof(buffer), 0);
         if (rlen <= 0) {
@@ -60,6 +78,8 @@ void handle_connection(int connfd)
             break;
         }
     }
+
+    NSLog(@"[ASS] [%d] Connection closed.", connfd);
 }
 
 void server()
@@ -93,6 +113,11 @@ void server()
     while(true) {
         int connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
         if (connfd > 0) {
+            struct timeval tv;
+            tv.tv_sec = 5;
+            tv.tv_usec = 0;
+            setsockopt(connfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+            setsockopt(connfd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv);
             setsockopt(connfd, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 handle_connection(connfd);
