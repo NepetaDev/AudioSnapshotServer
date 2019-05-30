@@ -1,6 +1,6 @@
 Package: io.ominousness.ass
 Name: AudioSnapshotServer
-Version: 1.0.0
+Version: 1.0.1
 Architecture: iphoneos-arm
 Description: iOS mediaserverd hook to serve snapshots of current audio buffer via TCP/IP
 Maintainer: Nepeta
